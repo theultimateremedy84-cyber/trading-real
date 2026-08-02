@@ -10,9 +10,7 @@ else
   echo "Running database schema push (timeout: 60s)..."
   # Use push-force so drizzle-kit never prompts for interactive confirmation.
   # Wrapped in a 60-second timeout so a hung DB connection never blocks startup.
-  timeout 60 pnpm --filter @workspace/db run push-force 2>&1 || {
-    echo "WARNING: Schema push failed or timed out. The server will still start."
-  }
+  timeout 60 pnpm --filter @workspace/db run push-force
   echo "Schema push complete."
 fi
 
