@@ -1,5 +1,6 @@
 import app from "./app";
 import { logger } from "./lib/logger";
+import { ensureSchema } from "@workspace/db";
 
 const rawPort = process.env["PORT"];
 
@@ -13,6 +14,16 @@ const port = Number(rawPort);
 
 if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
+}
+
+try {
+  await ensureSchema();
+} catch (err) {
+  logger.warn(
+    { err },
+    "DB schema bootstrap failed — server will start anyway but DB routes may fail. " +
+    "Check that DATABASE_URL is correct and the Postgres service is reachable."
+  );
 }
 
 app.listen(port, (err) => {
