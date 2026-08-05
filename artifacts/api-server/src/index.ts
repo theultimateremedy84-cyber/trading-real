@@ -5,9 +5,7 @@ import { ensureSchema } from "@workspace/db";
 const rawPort = process.env["PORT"];
 
 if (!rawPort) {
-  throw new Error(
-    "PORT environment variable is required but was not provided.",
-  );
+  throw new Error("PORT environment variable is required but was not provided.");
 }
 
 const port = Number(rawPort);
@@ -21,8 +19,7 @@ try {
 } catch (err) {
   logger.warn(
     { err },
-    "DB schema bootstrap failed — server will start anyway but DB routes may fail. " +
-    "Check that DATABASE_URL is correct and the Postgres service is reachable."
+    "DB schema bootstrap failed — server will start anyway. Check DATABASE_URL."
   );
 }
 
@@ -31,6 +28,5 @@ app.listen(port, (err) => {
     logger.error({ err }, "Error listening on port");
     process.exit(1);
   }
-
   logger.info({ port }, "Server listening");
 });
