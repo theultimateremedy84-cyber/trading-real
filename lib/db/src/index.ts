@@ -26,7 +26,6 @@ export async function ensureSchema(): Promise<void> {
     console.warn("[db] Skipping schema bootstrap — DATABASE_URL is not set.");
     return;
   }
-
   const client = await pool.connect();
   try {
     await client.query(`
@@ -54,7 +53,6 @@ export async function ensureSchema(): Promise<void> {
         is_demo              BOOLEAN NOT NULL DEFAULT true,
         updated_at           TIMESTAMP NOT NULL DEFAULT NOW()
       );
-
       CREATE TABLE IF NOT EXISTS signals (
         id                SERIAL PRIMARY KEY,
         epic              TEXT    NOT NULL,
@@ -73,7 +71,6 @@ export async function ensureSchema(): Promise<void> {
         htf_bias          TEXT,
         structure_context TEXT
       );
-
       CREATE TABLE IF NOT EXISTS trades (
         id                SERIAL PRIMARY KEY,
         deal_id           TEXT,
