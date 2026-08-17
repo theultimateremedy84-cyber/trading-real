@@ -1,0 +1,737 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: Trading Bot API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: bot
+    description: Bot control
+  - name: account
+    description: Account info
+  - name: positions
+    description: Open positions
+  - name: signals
+    description: ICT signals
+  - name: trades
+    description: Trade history
+  - name: markets
+    description: Market data
+  - name: performance
+    description: Performance metrics
+  - name: settings
+    description: Bot settings
+
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /bot/status:
+    get:
+      operationId: getBotStatus
+      tags: [bot]
+      summary: Get bot status
+      responses:
+        "200":
+          description: Bot status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BotStatus"
+
+  /bot/start:
+    post:
+      operationId: startBot
+      tags: [bot]
+      summary: Start the trading bot
+      responses:
+        "200":
+          description: Bot started
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BotStatus"
+
+  /bot/stop:
+    post:
+      operationId: stopBot
+      tags: [bot]
+      summary: Stop the trading bot
+      responses:
+        "200":
+          description: Bot stopped
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BotStatus"
+
+  /bot/emergency-stop:
+    post:
+      operationId: emergencyStop
+      tags: [bot]
+      summary: Close all positions and stop the bot immediately
+      responses:
+        "200":
+          description: Emergency stop executed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmergencyStopResult"
+
+  /bot/reset-session:
+    post:
+      operationId: resetSession
+      tags: [bot]
+      summary: Reset session P&L counter
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SessionReset"
+      responses:
+        "200":
+          description: Session reset
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  startingPnl:
+                    type: number
+                required:
+                  - success
+                  - startingPnl
+
+  /account:
+    get:
+      operationId: getAccount
+      tags: [account]
+      summary: Get account info
+      responses:
+        "200":
+          description: Account info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+
+  /positions:
+    get:
+      operationId: getPositions
+      tags: [positions]
+      summary: Get open positions
+      responses:
+        "200":
+          description: List of positions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Position"
+
+  /positions/{dealId}:
+    delete:
+      operationId: closePosition
+      tags: [positions]
+      summary: Close a position
+      parameters:
+        - in: path
+          name: dealId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Position closed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  dealId:
+                    type: string
+                  profit:
+                    type: number
+                  message:
+                    type: string
+                required:
+                  - success
+                  - dealId
+
+  /signals:
+    get:
+      operationId: getSignals
+      tags: [signals]
+      summary: Get ICT signals
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: number
+        - in: query
+          name: market
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of signals
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Signal"
+
+  /signals/{id}:
+    get:
+      operationId: getSignalById
+      tags: [signals]
+      summary: Get a signal by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Signal
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Signal"
+
+  /trades:
+    get:
+      operationId: getTrades
+      tags: [trades]
+      summary: Get trade history
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: number
+        - in: query
+          name: market
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of trades
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Trade"
+
+  /markets:
+    get:
+      operationId: getMarkets
+      tags: [markets]
+      summary: Get live market data
+      responses:
+        "200":
+          description: Market data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MarketData"
+
+  /performance:
+    get:
+      operationId: getPerformance
+      tags: [performance]
+      summary: Get performance metrics
+      responses:
+        "200":
+          description: Performance data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Performance"
+
+  /settings:
+    get:
+      operationId: getSettings
+      tags: [settings]
+      summary: Get bot settings
+      responses:
+        "200":
+          description: Settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Settings"
+    put:
+      operationId: updateSettings
+      tags: [settings]
+      summary: Update bot settings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SettingsUpdate"
+      responses:
+        "200":
+          description: Updated settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Settings"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    BotStatus:
+      type: object
+      properties:
+        running:
+          type: boolean
+        uptime:
+          type: number
+          nullable: true
+        lastScan:
+          type: string
+          nullable: true
+        openPositions:
+          type: number
+        activeMarkets:
+          type: number
+        sessionValid:
+          type: boolean
+        error:
+          type: string
+          nullable: true
+        sessionPnlOffset:
+          type: number
+        effectivePnl:
+          type: number
+      required:
+        - running
+
+    EmergencyStopResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+        closedPositions:
+          type: number
+        errors:
+          type: array
+          items:
+            type: string
+        botStopped:
+          type: boolean
+      required:
+        - success
+        - closedPositions
+        - botStopped
+
+    Account:
+      type: object
+      properties:
+        accountId:
+          type: string
+        accountName:
+          type: string
+        balance:
+          type: number
+        deposit:
+          type: number
+        profitLoss:
+          type: number
+        available:
+          type: number
+        currency:
+          type: string
+        status:
+          type: string
+      required:
+        - accountId
+        - balance
+        - available
+
+    Position:
+      type: object
+      properties:
+        dealId:
+          type: string
+        epic:
+          type: string
+        market:
+          type: string
+        direction:
+          type: string
+          enum: [BUY, SELL]
+        size:
+          type: number
+        notionalValue:
+          type: number
+          nullable: true
+        openLevel:
+          type: number
+          nullable: true
+        currentBid:
+          type: number
+        currentOffer:
+          type: number
+        profit:
+          type: number
+        openDate:
+          type: string
+        stopLevel:
+          type: number
+          nullable: true
+        limitLevel:
+          type: number
+          nullable: true
+        currency:
+          type: string
+      required:
+        - dealId
+        - epic
+        - market
+        - direction
+        - size
+        - profit
+
+    Signal:
+      type: object
+      properties:
+        id:
+          type: number
+        epic:
+          type: string
+        market:
+          type: string
+        direction:
+          type: string
+          enum: [BUY, SELL]
+        signalType:
+          type: string
+          enum: [ORDER_BLOCK, FAIR_VALUE_GAP, LIQUIDITY_SWEEP, BOS, CHOCH, COMBINED]
+        timeframe:
+          type: string
+        entryPrice:
+          type: number
+        stopLoss:
+          type: number
+        takeProfit:
+          type: number
+        confidence:
+          type: number
+        detectedAt:
+          type: string
+        executed:
+          type: boolean
+        killZone:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        htfBias:
+          type: string
+          nullable: true
+        structureContext:
+          type: string
+          nullable: true
+      required:
+        - id
+        - epic
+        - market
+        - direction
+        - signalType
+        - timeframe
+        - entryPrice
+        - stopLoss
+        - takeProfit
+        - confidence
+        - detectedAt
+        - executed
+
+    Trade:
+      type: object
+      properties:
+        id:
+          type: number
+        epic:
+          type: string
+        market:
+          type: string
+        direction:
+          type: string
+          enum: [BUY, SELL]
+        size:
+          type: number
+        entryPrice:
+          type: number
+        exitPrice:
+          type: number
+          nullable: true
+        profit:
+          type: number
+          nullable: true
+        entryDate:
+          type: string
+        exitDate:
+          type: string
+          nullable: true
+        stopLoss:
+          type: number
+        takeProfit:
+          type: number
+        strategy:
+          type: string
+        result:
+          type: string
+          nullable: true
+        riskRewardRatio:
+          type: number
+          nullable: true
+        signalId:
+          type: number
+          nullable: true
+      required:
+        - id
+        - epic
+        - market
+        - direction
+        - size
+        - entryPrice
+        - entryDate
+        - stopLoss
+        - takeProfit
+        - strategy
+
+    MarketData:
+      type: object
+      properties:
+        epic:
+          type: string
+        name:
+          type: string
+        bid:
+          type: number
+        offer:
+          type: number
+        change:
+          type: number
+        changePercent:
+          type: number
+        high:
+          type: number
+        low:
+          type: number
+        marketStatus:
+          type: string
+        spread:
+          type: number
+        lastUpdated:
+          type: string
+        trend:
+          type: string
+          enum: [BULLISH, BEARISH, SIDEWAYS]
+        activeSignal:
+          type: string
+          nullable: true
+      required:
+        - epic
+        - name
+        - bid
+        - offer
+        - marketStatus
+        - trend
+
+    Performance:
+      type: object
+      properties:
+        totalTrades:
+          type: number
+        winRate:
+          type: number
+        totalPnl:
+          type: number
+        todayPnl:
+          type: number
+        weekPnl:
+          type: number
+        monthPnl:
+          type: number
+        avgRR:
+          type: number
+        bestTrade:
+          type: number
+        worstTrade:
+          type: number
+        consecutiveWins:
+          type: number
+        consecutiveLosses:
+          type: number
+        sharpeRatio:
+          type: number
+          nullable: true
+        maxDrawdown:
+          type: number
+        byMarket:
+          type: array
+          items:
+            type: object
+            properties:
+              epic:
+                type: string
+              market:
+                type: string
+              trades:
+                type: number
+              wins:
+                type: number
+              losses:
+                type: number
+              pnl:
+                type: number
+              winRate:
+                type: number
+      required:
+        - totalTrades
+        - winRate
+        - totalPnl
+
+    Settings:
+      type: object
+      properties:
+        id:
+          type: number
+        riskPerTrade:
+          type: number
+        maxOpenTrades:
+          type: number
+        dailyLossLimit:
+          type: number
+        dailyProfitTarget:
+          type: number
+        haltOnDailyProfit:
+          type: boolean
+        enabledMarkets:
+          type: array
+          items:
+            type: string
+        enabledKillZones:
+          type: array
+          items:
+            type: string
+        minConfidence:
+          type: number
+        useOrderBlocks:
+          type: boolean
+        useFairValueGaps:
+          type: boolean
+        useLiquiditySweeps:
+          type: boolean
+        useBOS:
+          type: boolean
+        useChoCH:
+          type: boolean
+        trailingStop:
+          type: boolean
+        minRR:
+          type: number
+        capitalApiKey:
+          type: string
+        capitalIdentifier:
+          type: string
+        capitalApiUrl:
+          type: string
+        isDemo:
+          type: boolean
+      required:
+        - id
+        - riskPerTrade
+        - maxOpenTrades
+        - dailyLossLimit
+        - dailyProfitTarget
+        - haltOnDailyProfit
+
+    SessionReset:
+      type: object
+      properties:
+        startingPnl:
+          type: number
+
+    SettingsUpdate:
+      type: object
+      properties:
+        riskPerTrade:
+          type: number
+        maxOpenTrades:
+          type: number
+        dailyLossLimit:
+          type: number
+        dailyProfitTarget:
+          type: number
+        haltOnDailyProfit:
+          type: boolean
+        enabledMarkets:
+          type: array
+          items:
+            type: string
+        enabledKillZones:
+          type: array
+          items:
+            type: string
+        minConfidence:
+          type: number
+        useOrderBlocks:
+          type: boolean
+        useFairValueGaps:
+          type: boolean
+        useLiquiditySweeps:
+          type: boolean
+        useBOS:
+          type: boolean
+        useChoCH:
+          type: boolean
+        trailingStop:
+          type: boolean
+        minRR:
+          type: number
+        capitalApiKey:
+          type: string
+        capitalPassword:
+          type: string
+        capitalIdentifier:
+          type: string
+        capitalApiUrl:
+          type: string
+        isDemo:
+          type: boolean
